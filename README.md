@@ -14,3 +14,17 @@ If you know all of that already, well than, congratulations ;)
 But still... the attendance of the seminars is mandatory.
 
 Regards, L.
+
+## Week 2
+All hands on board!
+
+This week, you are going to implement a simple (naive) multilayer perceptron.
+In the notebook, there are already prepared base classes and structures. Define the class Neuron and Dense Layer with all the necessary parameters they require. Implement simple feed forward function. The weakness of Rosenblatt's perceptron was it's linearity. Make the linear Neuron Layers' output into non-linear by adding non-linear activation functions (the ones that are declared).
+
+Of course - you don't have to do it before the seminar... 
+As stated during the lecture and seminars, this will be your work for the upcoming week's seminars.
+
+Good luck,
+see ya
+
+Regards, L.

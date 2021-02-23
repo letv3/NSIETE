@@ -1,3 +1,6 @@
+## Author: Ing. Matus Pikuliak
+## This source code is not under the Licence of this repository.
+
 import itertools
 
 import numpy as np
