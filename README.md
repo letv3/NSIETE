@@ -28,3 +28,16 @@ Good luck,
 see ya
 
 Regards, L.
+
+## Week 3
+I cry, you cry, we cry 👍
+
+After successful feed forward, the only logical step is to implement backward feed.
+To make the task easier, we have implemented feed forward for you in a matrix form to ease the work with chain rule derivations and matrix multiplications. The backward pass requires the computation of loss function, implement the binary_cross_entropy and mean_squared_error functions. In the model, you can use either of them or both of them in summation. The derivation of these functions is also necessary, so remember the tears of years past of your studies and derive the activations and loss functions.
+
+GLHF
+
+Regards, L,M,S,I
+(this task was really a collective effort)
+
+PS: hopefully, this one is bugs free ;)
