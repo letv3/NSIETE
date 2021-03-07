@@ -41,3 +41,15 @@ Regards, L,M,S,I
 (this task was really a collective effort)
 
 PS: hopefully, this one is bugs free ;)
+
+## Week 4
+Let's do some training magic! 🧙
+
+And here we have it. On this week's task, you will finally make your network able to train and to optimize for the given problem.
+Stefan has created for you a very nice and small framework you will finish with your implementation of optimizers.
+
+Wish you luck and fun with implementing and training your own little networks 😉
+
+Regards, L.
+
+KUDOS Stefan!
