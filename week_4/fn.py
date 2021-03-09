@@ -50,6 +50,7 @@ def gradient_check_n(network, criterion, X, Y, epsilon=1e-7):
         print(
             "\033[92m" + "Your backward propagation works perfectly fine! difference = " + str(difference) + "\033[0m")
 
+
 def softmax(inputs, *args, **kwargs):
     exps = np.exp(inputs)
     return exps / np.sum(exps, axis=0)
