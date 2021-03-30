@@ -130,5 +130,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
 Zadanie 2/cifar-100-python.tar.gz
-Zadanie 2/cifar-100.tar.gz
+Zadanie 2/.env_zadanie2/
+Zadanie 2/cifar-100-python/
