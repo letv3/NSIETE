@@ -3,8 +3,8 @@ import numpy as np
 import torch
 
 
-from src.env import Env, EnvD
-from src.model import Agent, AgentD
+from src.env import Env
+from src.model import Agent
 
 
 import matplotlib.pyplot as plt
@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 
 NUM_EPISODES = 100000
 MAX_STEPS = 2000
-
+EARLY_STOP_EPISODES = 10
 
 torch.manual_seed(0)
 if torch.cuda.is_available():
+    device = torch.device('cuda')
     torch.cuda.manual_seed(0)
 
 if __name__ == "__main__":
@@ -28,6 +29,7 @@ if __name__ == "__main__":
 
     reward_history = []
     average_reward = 0
+    max_score, episodes_with_lower_score = 0, 0
 
     for episode in range(NUM_EPISODES):
         score = 0
@@ -49,6 +51,13 @@ if __name__ == "__main__":
 
         average_reward = average_reward * 0.99 + score * 0.01
         reward_history.append(score)
+        if score > max_score:
+            max_score = score
+        else:
+            episodes_with_lower_score += 1
+            if episodes_with_lower_score == EARLY_STOP_EPISODES:
+                print(f"latest average revard: {score}, stopped on {episode} episode")
+                break
 
 
         # if episode % args.log_interval == 0:

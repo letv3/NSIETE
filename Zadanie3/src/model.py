@@ -10,7 +10,7 @@ from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 from src.net import Net
 
 
-class Agent():
+class Agent:
     max_grad_norm = 0.5
     clip_param = 0.1
     ppo_epoch = 10
