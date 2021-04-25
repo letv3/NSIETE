@@ -66,3 +66,42 @@ class Net(nn.Module):
 
         return (alpha, beta), v
 
+
+
+class Actor(nn.Module):
+    def __init__(self, obs_space, action_space, alpha=1e-4, l1_size=400, l2_size=300):
+        super(Actor, self).__init__()
+        self.action_space = action_space
+
+        self.layer1 = nn.Linear(obs_space, l1_size)
+        self.layer2 = nn.Linear(l1_size, l2_size)
+        self.layer3 = nn.Linear(l2_size, action_space)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
+
+    def forward(self, x):
+        x = F.relu(self.layer1(x))
+        x = F.relu(self.layer2(x))
+        x = self.layer3(x)
+
+        #x = T.tanh(x) * T.from_numpy(self.action_space.high).float()
+        return x
+
+
+
+class Critic(nn.Module):
+    def __init__(self, obs_space,action_space,alpha=1e-4, l1_size=400, l2_size=300):
+        super(Critic, self).__init__()
+        self.fc1 = nn.Linear(obs_space, l1_size)
+        self.fc2 = nn.Linear(l1_size+action_space, l2_size)
+        self.fc3 = nn.Linear(l2_size, 1)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
+
+    def forward(self, x, a):
+        x = nn.ReLU(self.fc1(x))
+        x = nn.ReLU(self.fc2(T.cat([x, a], dim=1)))
+        x = self.fc3(x)
+
+        return x
+
