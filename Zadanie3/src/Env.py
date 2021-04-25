@@ -1,11 +1,12 @@
-import LunarLander
+from src.LunarLander import LunarLander
 import numpy as np
 
-class Env():
-    def __init__(self):
 
+class Env:
+    def __init__(self, continuous=False):
+        self.continuous = continuous
         self.seed = 0
-        self.env = LunarLander()
+        self.env = LunarLander(continuous=continuous)
         self.env.seed(self.seed)
 
     def reset(self):
@@ -38,3 +39,6 @@ class Env():
 
         return memory
 
+
+if __name__ == '__main__':
+    pass
