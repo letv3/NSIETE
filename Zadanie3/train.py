@@ -1,52 +1,51 @@
 import numpy as np
-
 import torch
-
-
-from src.env import Env
-from src.model import Agent
-
-
+from src.Env import Env
+from src.Model import Agent
 import matplotlib.pyplot as plt
 
 
+NUM_EPISODES = 100000  # Number of episodes
+MAX_STEPS = 2000  # Max number of steps in one episodes
+EARLY_STOP_EPISODES = 10  # Stop after n episodes no progress
+LOG_INTERVAL = 10  # Log after n of episodes
+RENDER = True
 
-NUM_EPISODES = 100000
-MAX_STEPS = 2000
-EARLY_STOP_EPISODES = 10
 
+
+# Torch setup
 torch.manual_seed(0)
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.cuda.manual_seed(0)
 
+# Main program
 if __name__ == "__main__":
 
     agent = Agent()
     env = Env()
 
-    state = env.reset()
-
     reward_history = []
+    max_score = 0
     average_reward = 0
-    max_score, episodes_with_lower_score = 0, 0
+    episodes_with_lower_score = 0
 
     for episode in range(NUM_EPISODES):
         score = 0
         state = env.reset()
 
-        # Cycle for one opisode
+        # Actions in one episode
         for t in range(MAX_STEPS):
             action, a_logp = agent.select_action(state)
-            new_state, reward, done, die = env.step(action)
-            if False:
+            new_state, reward, done = env.step(action)
+            if RENDER:
                 env.render()
             if agent.store((state, action, a_logp, reward, new_state)):
                 print('Updating model.')
                 agent.update()
             score += reward
             state = new_state
-            if done or die:
+            if done or reward <= -200:
                 break
 
         average_reward = average_reward * 0.99 + score * 0.01
@@ -58,7 +57,6 @@ if __name__ == "__main__":
             if episodes_with_lower_score == EARLY_STOP_EPISODES:
                 print(f"latest average revard: {score}, stopped on {episode} episode")
                 break
-
 
         # if episode % args.log_interval == 0:
         #     print('Ep {}\tLast score: {:.2f}\tMoving average score: {:.2f}'.format(
