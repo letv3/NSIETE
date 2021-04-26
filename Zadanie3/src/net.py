@@ -47,29 +47,27 @@ class Net(nn.Module):
             nn.Linear(256, 4)
         )
         self.apply(self._weights_init)
-        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
 
     @staticmethod
     def _weights_init(m):
         if isinstance(m, nn.Conv2d):
-            nn.init.xavier_uniform_(
+            nn.init.stateavier_uniform_(
                 m.weight, gain=nn.init.calculate_gain('relu'))
             nn.init.constant_(m.bias, 0.1)
 
-    def forward(self, x):
-        x = self.cnn_base(x)
-        x = x.view(-1, 256)
-        v = self.v(x)
-        x = self.fc(x)
-        alpha = self.alpha_head(x) + 1
-        beta = self.beta_head(x) + 1
+    def forward(self, state):
+        state = self.cnn_base(state)
+        state = state.view(-1, 256)
+        v = self.v(state)
+        state = self.fc(state)
+        alpha = self.alpha_head(state) + 1
+        beta = self.beta_head(state) + 1
 
         return (alpha, beta), v
 
 
-
 class Actor(nn.Module):
-    def __init__(self, obs_space, action_space, alpha=1e-4, l1_size=400, l2_size=300):
+    def __init__(self, obs_space, action_space, l1_size=400, l2_size=300):
         super(Actor, self).__init__()
         self.action_space = action_space
 
@@ -77,31 +75,25 @@ class Actor(nn.Module):
         self.layer2 = nn.Linear(l1_size, l2_size)
         self.layer3 = nn.Linear(l2_size, action_space)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
+    def forward(self, state):
+        state = F.relu(self.layer1(state))
+        state = F.relu(self.layer2(state))
+        state = self.layer3(state)
 
-    def forward(self, x):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        x = self.layer3(x)
-
-        #x = T.tanh(x) * T.from_numpy(self.action_space.high).float()
-        return x
-
+        # state = T.tanh(state) * T.from_numpy(self.action_space.high).float()
+        return state
 
 
 class Critic(nn.Module):
-    def __init__(self, obs_space,action_space,alpha=1e-4, l1_size=400, l2_size=300):
+    def __init__(self, obs_space, action_space, l1_size=400, l2_size=300):
         super(Critic, self).__init__()
         self.fc1 = nn.Linear(obs_space, l1_size)
-        self.fc2 = nn.Linear(l1_size+action_space, l2_size)
+        self.fc2 = nn.Linear(l1_size + action_space, l2_size)
         self.fc3 = nn.Linear(l2_size, 1)
 
-        self.optimizer = optim.Adam(self.parameters(), lr=alpha)
+    def forward(self, state, action):
+        state = F.relu(self.fc1(state))
+        state = F.relu(self.fc2(T.cat([state, action], dim=1)))
+        state = self.fc3(state)
 
-    def forward(self, x, a):
-        x = nn.ReLU(self.fc1(x))
-        x = nn.ReLU(self.fc2(T.cat([x, a], dim=1)))
-        x = self.fc3(x)
-
-        return x
-
+        return state
