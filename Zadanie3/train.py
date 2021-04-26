@@ -2,16 +2,12 @@ import numpy as np
 import torch
 from src.Env import Env
 from src.Model import Agent
-import matplotlib.pyplot as plt
 
-
-NUM_EPISODES = 100000  # Number of episodes
+NUM_EPISODES = 1000  # Number of episodes
 MAX_STEPS = 2000  # Max number of steps in one episodes
 EARLY_STOP_EPISODES = 10  # Stop after n episodes no progress
 LOG_INTERVAL = 10  # Log after n of episodes
-RENDER = True
-
-
+RENDER = False
 
 # Torch setup
 torch.manual_seed(0)
@@ -22,8 +18,8 @@ if torch.cuda.is_available():
 # Main program
 if __name__ == "__main__":
 
-    agent = Agent()
     env = Env()
+    agent = Agent(env.env)
 
     reward_history = []
     max_score = 0
@@ -32,20 +28,21 @@ if __name__ == "__main__":
 
     for episode in range(NUM_EPISODES):
         score = 0
-        state = env.reset()
+        state = np.float64(env.reset())
 
         # Actions in one episode
         for t in range(MAX_STEPS):
-            action, a_logp = agent.select_action(state)
+            action = agent.select_action(state)
             new_state, reward, done = env.step(action)
+            new_state = np.float64(new_state)
             if RENDER:
                 env.render()
-            if agent.store((state, action, a_logp, reward, new_state)):
+            if agent.memory.store((state, action, reward, new_state, done)):
                 print('Updating model.')
                 agent.update()
             score += reward
             state = new_state
-            if done or reward <= -200:
+            if done:
                 break
 
         average_reward = average_reward * 0.99 + score * 0.01
@@ -54,13 +51,13 @@ if __name__ == "__main__":
             max_score = score
         else:
             episodes_with_lower_score += 1
-            if episodes_with_lower_score == EARLY_STOP_EPISODES:
-                print(f"latest average revard: {score}, stopped on {episode} episode")
-                break
+        #    if episodes_with_lower_score == EARLY_STOP_EPISODES:
+        #        print(f"latest average revard: {score}, stopped on {episode} episode")
+        #        break
 
-        # if episode % args.log_interval == 0:
-        #     print('Ep {}\tLast score: {:.2f}\tMoving average score: {:.2f}'.format(
-        #         episode, score, average_reward))
+        if episode % LOG_INTERVAL == 0:
+            print('Ep {}\tLast score: {:.2f}\tMoving average score: {:.2f}'.format(
+                 episode, score, average_reward))
         #
         #     if args.save:
         #         agent.save_param(name=str(args.train_ord) + "_model_state")
