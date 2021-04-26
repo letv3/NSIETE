@@ -75,7 +75,7 @@ class LunarLander(gym.Env, EzPickle):
         'video.frames_per_second': FPS
     }
 
-    def __init__(self,continuous=False):
+    def __init__(self,continuous=True):
         EzPickle.__init__(self)
         self.seed()
         self.viewer = None
