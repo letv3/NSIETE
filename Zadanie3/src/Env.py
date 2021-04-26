@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Env:
-    def __init__(self, continuous=False):
+    def __init__(self, continuous=True):
         self.continuous = continuous
         self.seed = 0
         self.env = LunarLander(continuous=continuous)
