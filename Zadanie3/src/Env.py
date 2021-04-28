@@ -21,8 +21,8 @@ class Env:
         state, reward, done, _ = self.env.step(action)
         return state, reward, done
 
-    def render(self, *arg):
-        self.env.render(*arg)
+    def render(self, *args, **kvargs):
+        return self.env.render(*args, **kvargs)
 
     @staticmethod
     def reward_memory():
