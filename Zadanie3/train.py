@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from src.Env import Env
-from src.model import Agent
+from src.Model import Agent
 
 NUM_EPISODES = 8000  # Number of episodes
 MAX_STEPS = 2000  # Max number of steps in one episodes
