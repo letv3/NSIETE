@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 from src.Env import Env
-from src.Model import Agent
+from src.model import Agent
 
-NUM_EPISODES = 1000  # Number of episodes
+NUM_EPISODES = 8000  # Number of episodes
 MAX_STEPS = 2000  # Max number of steps in one episodes
 EARLY_STOP_EPISODES = 10  # Stop after n episodes no progress
 LOG_INTERVAL = 10  # Log after n of episodes
@@ -29,6 +29,7 @@ if __name__ == "__main__":
     for episode in range(NUM_EPISODES):
         score = 0
         state = np.float64(env.reset())
+        # state = torch.from_numpy(state).to(device)
 
         # Actions in one episode
         for t in range(MAX_STEPS):

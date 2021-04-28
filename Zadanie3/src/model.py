@@ -7,9 +7,9 @@ import torch.optim as optim
 from torch.distributions import Beta
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 
-from src.Net import Net
+from src.net import Net
 
-from src.Net import Actor, Critic
+from src.net import Actor, Critic
 from src.Memory import Memory
 
 from gym import spaces
@@ -19,7 +19,7 @@ class Agent:
     max_grad_norm = 0.5
     clip_param = 0.1
     ppo_epoch = 10
-    buffer_capacity, batch_size = 5000, 512
+    buffer_capacity, batch_size = 5000, 1024
 
     def __init__(self,env,alpha=1e-4, gamma=0.99, tau=1e-2):
 
@@ -63,7 +63,7 @@ class Agent:
         # Transition memory initialization
         self.transition = np.dtype(
             [('s', np.float64, self.observation_space.shape), ('a', np.float64, self.action_space.shape),
-             ('r', np.float64), ('s_n', np.float64, self.observation_space.shape), ("d", np.float64, (1,))])
+             ('r', np.float64, (1,)), ('s_n', np.float64, self.observation_space.shape), ("d", np.float64, (1,))])
         self.memory = Memory(self.buffer_capacity, self.transition)
 
         # Training
@@ -76,7 +76,8 @@ class Agent:
         action = self.actor.forward(state_x)
 
         if type(self.action_space) == spaces.Box:
-            action = T.tanh(action).detach().numpy()
+            # action = T.tanh(action).detach().numpy()
+            action = T.tanh(action).cpu().detach().numpy()
         elif type(self.action_space) == spaces.Discrete:
             action = action  # TODO Implement action handling if disccrete
         else:
@@ -86,10 +87,10 @@ class Agent:
 
     def update(self):  # TODO Implement update
         states, actions, rewards, next_states, _ = self.memory.sample(self.batch_size)
-        states = T.DoubleTensor(states)
-        actions = T.DoubleTensor(actions)
-        rewards = T.DoubleTensor(rewards)
-        next_states = T.DoubleTensor(next_states)
+        states = T.DoubleTensor(states).to(self.device)
+        actions = T.DoubleTensor(actions).to(self.device)
+        rewards = T.DoubleTensor(rewards).to(self.device)
+        next_states = T.DoubleTensor(next_states).to(self.device)
 
         # Critic loss
         Qvals = self.critic.forward(states, actions)
@@ -116,6 +117,10 @@ class Agent:
 
         for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
+
+
+
+
 
 
 class Agent_old:
