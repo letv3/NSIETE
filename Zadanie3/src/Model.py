@@ -7,9 +7,9 @@ import torch.optim as optim
 from torch.distributions import Beta
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 
-from src.net import Net
+from src.Net import Net
 
-from src.net import Actor, Critic
+from src.Net import Actor, Critic
 from src.Memory import Memory
 
 from gym import spaces
@@ -18,14 +18,16 @@ from gym import spaces
 class Agent:
     max_grad_norm = 0.5
     clip_param = 0.1
-    ppo_epoch = 10
-    buffer_capacity, batch_size = 5000, 1024
 
-    def __init__(self,env,alpha=1e-4, gamma=0.99, tau=1e-2):
+    def __init__(self, env, alpha=1e-4, gamma=0.99, tau=1e-2, op_update=10, buffer_capacity=2000, batch_size=256):
 
         self.alpha = alpha
         self.gamma = gamma
         self.tau = tau
+
+        self.op_update=op_update
+        self.buffer_capacity=buffer_capacity
+        self.batch_size=batch_size
 
         self.action_space = env.action_space
         self.observation_space = env.observation_space
@@ -85,31 +87,32 @@ class Agent:
         return action
         # return action.clip(min=self.action_space.low, max=self.action_space.high)  # TODO: clip action?
 
-    def update(self):  # TODO Implement update
-        states, actions, rewards, next_states, _ = self.memory.sample(self.batch_size)
-        states = T.DoubleTensor(states).to(self.device)
-        actions = T.DoubleTensor(actions).to(self.device)
-        rewards = T.DoubleTensor(rewards).to(self.device)
-        next_states = T.DoubleTensor(next_states).to(self.device)
+    def update(self):
+        for i in range(self.op_update):
+            states, actions, rewards, next_states, _ = self.memory.sample(self.batch_size)
+            states = T.DoubleTensor(states).to(self.device)
+            actions = T.DoubleTensor(actions).to(self.device)
+            rewards = T.DoubleTensor(rewards).to(self.device)
+            next_states = T.DoubleTensor(next_states).to(self.device)
 
-        # Critic loss
-        Qvals = self.critic.forward(states, actions)
-        next_actions = self.actor_target.forward(next_states)
-        next_Q = self.critic_target.forward(next_states, next_actions.detach())
-        Qprime = rewards + self.gamma * next_Q
-        critic_loss = self.critic_criterion(Qvals, Qprime)
+            # Critic loss
+            qvals = self.critic.forward(states, actions)
+            next_actions = self.actor_target.forward(next_states)
+            next_Q = self.critic_target.forward(next_states, next_actions.detach())
+            qprime = rewards + self.gamma * next_Q
+            critic_loss = self.critic_criterion(qvals, qprime)
 
-        # Actor loss
-        policy_loss = -self.critic.forward(states, self.actor.forward(states)).mean()
+            # Actor loss
+            policy_loss = -self.critic.forward(states, self.actor.forward(states)).mean()
 
-        # update networks
-        self.actor_optimizer.zero_grad()
-        policy_loss.backward()
-        self.actor_optimizer.step()
+            # update networks
+            self.actor_optimizer.zero_grad()
+            policy_loss.backward()
+            self.actor_optimizer.step()
 
-        self.critic_optimizer.zero_grad()
-        critic_loss.backward()
-        self.critic_optimizer.step()
+            self.critic_optimizer.zero_grad()
+            critic_loss.backward()
+            self.critic_optimizer.step()
 
         # update target networks
         for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
