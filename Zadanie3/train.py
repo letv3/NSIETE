@@ -22,12 +22,13 @@ if __name__ == "__main__":
     agent = Agent(env.env)
 
     reward_history = []
-    max_score = 0
+    moving_reward_history = []
+    max_reward = 0
     average_reward = 0
     episodes_with_lower_score = 0
 
     for episode in range(NUM_EPISODES):
-        score = 0
+        moving_reward = 0
         state = np.float64(env.reset())
         # state = torch.from_numpy(state).to(device)
 
@@ -41,15 +42,16 @@ if __name__ == "__main__":
             if agent.memory.store((state, action, reward, new_state, done)):
                 print('Updating model.')
                 agent.update()
-            score += reward
+            moving_reward += reward
             state = new_state
             if done:
                 break
 
-        average_reward = average_reward * 0.99 + score * 0.01
-        reward_history.append(score)
-        if score > max_score:
-            max_score = score
+        average_reward = average_reward * 0.99 + reward * 0.01
+        reward_history.append(reward)
+        moving_reward_history.append(moving_reward)
+        if reward > max_reward:
+            max_reward = reward
         else:
             episodes_with_lower_score += 1
         #    if episodes_with_lower_score == EARLY_STOP_EPISODES:
@@ -57,8 +59,8 @@ if __name__ == "__main__":
         #        break
 
         if episode % LOG_INTERVAL == 0:
-            print('Ep {}\tLast score: {:.2f}\tMoving average score: {:.2f}'.format(
-                 episode, score, average_reward))
+            print('Ep {}\tLast score: {:.2f}\t Average score: {:.2f}\t Moving average score: {:.2f}'.format(
+                 episode, reward, average_reward,moving_reward))
         #
         #     if args.save:
         #         agent.save_param(name=str(args.train_ord) + "_model_state")
