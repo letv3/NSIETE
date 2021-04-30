@@ -1,0 +1,24 @@
+{
+    "os": "Windows-10-10.0.19041-SP0",
+    "python": "3.8.8",
+    "heartbeatAt": "2021-04-29T20:02:35.966195",
+    "startedAt": "2021-04-29T20:02:26.293677",
+    "docker": null,
+    "gpu": "GeForce GTX 1050",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:/Users/ollyt/Jupyter-projects/NSIETE/Zadanie3/train.py",
+    "codePath": "Zadanie3\\train.py",
+    "git": {
+        "remote": "https://github.com/xPetricko/NSIETE.git",
+        "commit": "9ac674d5b6ea41ee5db43927d8bbac13b5829d25"
+    },
+    "email": "xlytvyn@stuba.sk",
+    "root": "C:/Users/ollyt/Jupyter-projects/NSIETE",
+    "host": "letvspc",
+    "username": "ollyt",
+    "executable": "C:\\Users\\ollyt\\Jupyter-projects\\NSIETE\\netenv\\Scripts\\python.exe"
+}
