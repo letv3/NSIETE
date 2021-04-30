@@ -34,24 +34,24 @@ gaussian_noise = False
 noise_param = 0
 seed = 0
 
-run_params = (
-    experiment_name,
-    episodes,
-    max_steps,
-    exploration if exploration else None,
-    exploration_prob if exploration_prob else None,
-    train_interval,
-    batch_size,
-    min_replay_size,
-    memory_capacity,
-    actor_lr,
-    critic_lr,
-    gamma,
-    tau,
-    gaussian_noise if gaussian_noise else None,
-    noise_param if noise_param else None,
-    seed
-)
+run_params = {
+    "experiment_name": experiment_name,
+    "episodes": episodes,
+    "max_steps": max_steps,
+    "exploration": exploration if exploration else None,
+    "exploration_prob": exploration_prob if exploration_prob else None,
+    "train_interval": train_interval,
+    "batch_size": batch_size,
+    "min_replay_size": min_replay_size,
+    "memory_capacity": memory_capacity,
+    "actor_lr": actor_lr,
+    "critic_lr": critic_lr,
+    "gamma": gamma,
+    "tau": tau,
+    "gaussian_noise": gaussian_noise if gaussian_noise else None,
+    "noise_param": noise_param if noise_param else None,
+    "seed": seed
+}
 
 if __name__ == "__main__":
 
