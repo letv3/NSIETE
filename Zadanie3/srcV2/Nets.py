@@ -4,21 +4,21 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
-shared_CNN = None
 device = T.device('cuda' if T.cuda.is_available() else 'cpu')
+
 
 
 class Actor(nn.Module):
 
-    def __init__(self, alpha=0.0001, input_dims=[8], fc1_dims=400, fc2_dims=300, n_actions=2):
+    def __init__(self, alpha=0.0001, n_inputs=[8], fc1_dims=400, fc2_dims=300, n_actions=2):
         super(Actor, self).__init__()
         self.alpha = alpha
-        self.input_dims = input_dims
+        self.n_inputs = n_inputs
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
 
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(*self.n_inputs, self.fc1_dims)
         f1 = 1 / np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
@@ -53,15 +53,15 @@ class Actor(nn.Module):
         return x
 
 class Critic(nn.Module):
-    def __init__(self, beta=0.001, input_dims=[8], fc1_dims=400, fc2_dims=300, n_actions=2):
+    def __init__(self, beta=0.001, n_inputs=[8], fc1_dims=400, fc2_dims=300, n_actions=2):
         super(Critic, self).__init__()
         self.beta = beta
-        self.input_dims = input_dims
+        self.n_inputs = n_inputs
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
 
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(*self.n_inputs, self.fc1_dims)
         f1 = 1 / np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)

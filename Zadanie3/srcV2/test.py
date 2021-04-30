@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from DDPGAgent import DDPGAgent
+from Agent import Agent
 import argparse
 import json
 import gym
@@ -25,17 +25,17 @@ if __name__ == "__main__":
     args = parse_args()
 
     # Load json parameters
-    with open(f"{args.resume}/parameters.json", "r") as f:
+    with open(f"{resume}/parameters.json", "r") as f:
         parameters = json.load(f)
 
     env = gym.make(parameters['env'])
 
-    T.manual_seed(args.seed)
+    T.manual_seed(seed)
     T.backends.cudnn.deterministic = True
     T.backends.cudnn.benchmark = False
-    np.random.seed(args.seed)
-    random.seed(args.seed)
-    env.seed(args.seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    env.seed(seed)
 
     print(f"================= {'Environment Information'.center(30)} =================")
     print(f"Action space shape: {env.env.action_space.shape}")
@@ -48,11 +48,11 @@ if __name__ == "__main__":
 
     n_actions = env.action_space.shape[0] if type(env.action_space) == gym.spaces.box.Box else env.action_space.n
 
-    agent = DDPGAgent(input_dims=env.observation_space.shape,
+    agent = Agent(n_inputs=env.observation_space.shape,
                       n_actions=n_actions,
                       **parameters)
 
-    agent.load_agent(f"{args.resume}/saves")
+    agent.load_agent(f"{resume}/saves")
 
     print(f"================= {'Agent Information'.center(30)} =================")
     print(agent)
@@ -61,12 +61,12 @@ if __name__ == "__main__":
 
     total_rewards = 0.0
 
-    for episode in range(args.episodes):
+    for episode in range(episodes):
         obs = env.reset()
         episode_reward = 0.0
 
-        for step in range(args.episode_length):
-            if args.render:
+        for step in range(episode_length):
+            if render:
                 env.render()
 
             # Get actions
@@ -88,4 +88,4 @@ if __name__ == "__main__":
         episode_reward = round(episode_reward, 3)
         print(f"Episode: {episode} Evaluation reward: {episode_reward}")
 
-    print(f"{args.episodes} episode average: {round(total_rewards / args.episodes, 3)}")
+    print(f"{episodes} episode average: {round(total_rewards / episodes, 3)}")
