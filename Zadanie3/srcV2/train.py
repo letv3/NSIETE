@@ -13,10 +13,9 @@ from srcV2.Env import LunarLanderContinuous as LLC
 
 device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
-
 experiment_name = "Zadanie 3"
 episodes = 10000
-episode_length = 1000
+max_steps = 1000
 exploration = 0
 exploration_prob = 0
 train_interval = 1
@@ -35,6 +34,25 @@ gaussian_noise = False
 noise_param = 0
 seed = 0
 
+run_params = (
+    experiment_name,
+    episodes,
+    max_steps,
+    exploration if exploration else None,
+    exploration_prob if exploration_prob else None,
+    train_interval,
+    batch_size,
+    min_replay_size,
+    memory_capacity,
+    actor_lr,
+    critic_lr,
+    gamma,
+    tau,
+    gaussian_noise if gaussian_noise else None,
+    noise_param if noise_param else None,
+    seed
+)
+
 if __name__ == "__main__":
 
     env = LLC()
@@ -45,7 +63,6 @@ if __name__ == "__main__":
     np.random.seed(seed)
     random.seed(seed)
     env.seed(seed)
-
 
     # print(f"================= {'Environment Information'.center(30)} =================")
     # print(f"Action space shape: {env.action_space.shape}")
@@ -117,7 +134,7 @@ if __name__ == "__main__":
         critic_loss = 0.0
 
         # Generate rollout and train agent
-        for step in range(episode_length):
+        for step in range(max_steps):
 
             if render:
                 env.render()
@@ -126,19 +143,18 @@ if __name__ == "__main__":
             with T.no_grad():
                 if not exploration_prob:
                     if episode >= exploration:
-                        action = agent.action(state) #TODO + T.tensor(noise(), dtype=T.float, device=device)
+                        action = agent.action(state)  # TODO + T.tensor(noise(), dtype=T.float, device=device)
                         action = T.clamp(action, -1.0, 1.0)
                     else:
                         action = agent.random_action()
                 else:
-                    if np.random.random()<exploration_prob:
-                        action = agent.action(state) #TODO + T.tensor(noise(), dtype=T.float, device=device)
+                    if np.random.random() < exploration_prob:
+                        action = agent.action(state)  # TODO + T.tensor(noise(), dtype=T.float, device=device)
                         action = T.clamp(action, -1.0, 1.0)
                     else:
                         action = agent.random_action()
-                        #TODO exploration_prob calculation
-                        
-            
+                        # TODO exploration_prob calculation
+
             # Take step in environment
             new_state, reward, done, _ = env.step(action.detach().cpu().numpy() * env.action_space.high)
             episode_reward += reward
@@ -174,7 +190,7 @@ if __name__ == "__main__":
                 state = env.reset()
                 rewards = 0
 
-                for step in range(episode_length):
+                for step in range(max_steps):
                     if render:
                         env.render()
 
