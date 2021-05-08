@@ -7,9 +7,9 @@ def calculate_exploration_prob(loss_history, act_explor_prob,threshold):
         variance += np.square(i-mean)
 
     if threshold >= variance:
-        act_explor_prob += 0.01
+        act_explor_prob += 0.05
     else:
-        act_explor_prob -= 0.01
+        act_explor_prob -= 0.05
 
     if act_explor_prob < 0:
         return 0
