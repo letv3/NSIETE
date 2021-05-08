@@ -10,6 +10,7 @@ import random
 from collections import deque
 
 from srcV2.Env import LunarLanderContinuous as LLC
+from srcV2.Misc import *
 
 device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
@@ -33,6 +34,9 @@ render = False
 gaussian_noise = False
 noise_param = 0
 seed = 0
+#Exploration mode
+# 0- no exploration, 1- static episode eploration, 2 - variable critic loss exploration
+exploration_mode = 1
 
 run_params = {
     "experiment_name": experiment_name,
@@ -97,7 +101,6 @@ if __name__ == "__main__":
 
     n_actions = env.action_space.shape[0] if type(env.action_space) == gym.spaces.box.Box else env.action_space.n
 
-    # TODO: Modify this to call any other algorithm
     agent = Agent(
         actor_lr=actor_lr,
         critic_lr=critic_lr,
@@ -110,21 +113,9 @@ if __name__ == "__main__":
         n_actions=n_actions
     )
 
-    # print(f"================= {'Noise Information'.center(30)} =================")
-    # if gaussian_noise:
-    #     noise = NormalActionNoise(mean=0, sigma=noise_param, size=n_actions)
-    #     print(noise)
-    # else:
-    #     noise = OrnsteinUhlenbeckActionNoise(np.zeros(n_actions), sigma=noise_param)
-    #     print(noise)
-    #
-    # print(f"================= {'Agent Information'.center(30)} =================")
-    # print(agent)
-    #
-    # print(f"================= {'Begin Training'.center(30)} =================")
-
     counter = 0
     reward_history = deque(maxlen=100)
+    loss_history = deque(maxlen=50)
 
     for episode in range(episodes):
         state = env.reset()
@@ -167,10 +158,12 @@ if __name__ == "__main__":
                 if agent.memory.size() > agent.min_replay_size:
                     counter = 0
                     loss = agent.train()
-
+                    # Change probability of random action
+                    exploration_prob = calculate_exploration_prob(loss_history, exploration_prob, 10)
                     # Loss information kept for monitoring purposes during training
                     actor_loss += loss['actor_loss']
                     critic_loss += loss['critic_loss']
+                    loss_history.append(critic_loss)
 
                     agent.update()
 
