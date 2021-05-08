@@ -7,28 +7,42 @@ import gym
 import random
 import torch as T
 
+from srcV2.Env import LunarLanderContinuous as LLC
+from srcV2.Misc import *
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-r', '--resume', default="", type=str)
-    parser.add_argument('-e', '--episodes', default=100, type=int)
-    parser.add_argument('-el', '--episode_length', default=1000, type=int)
-    parser.add_argument('--render', dest='render', action='store_true')
-    parser.set_defaults(render=False)
-    parser.add_argument('--seed', default=0, type=int)
-    return parser.parse_args()
+experiment_name = "Zadanie 3"
+episodes = 10000
+max_steps = 1000
+exploration = 0
+exploration_prob = 0
+train_interval = 1
+eval_eps = 5
+eval_interval = 10
+
+batch_size = 64
+min_replay_size = 1000
+memory_capacity = 1000000
+actor_lr = 1e-4
+critic_lr = 1e-3
+gamma = 0.99
+tau = 0.005
+render = False
+gaussian_noise = False
+noise_param = 0
+seed = 0
+#Exploration mode
+# 0- no exploration, 1- static episode eploration, 2 - variable critic loss exploration
+exploration_mode = 1
 
 
 if __name__ == "__main__":
-    args = parse_args()
-
+   
     # Load json parameters
-    with open(f"{resume}/parameters.json", "r") as f:
-        parameters = json.load(f)
+   
 
-    env = gym.make(parameters['env'])
+    env = LLC()
 
     T.manual_seed(seed)
     T.backends.cudnn.deterministic = True
@@ -37,27 +51,23 @@ if __name__ == "__main__":
     random.seed(seed)
     env.seed(seed)
 
-    print(f"================= {'Environment Information'.center(30)} =================")
-    print(f"Action space shape: {env.env.action_space.shape}")
-    print(f"Action space upper bound: {env.env.action_space.high}")
-    print(f"Action space lower bound: {env.env.action_space.low}")
-
-    print(f"Observation space shape: {env.env.observation_space.shape}")
-    print(f"Observation space upper bound: {np.max(env.env.observation_space.high)}")
-    print(f"Observation space lower bound: {np.min(env.env.observation_space.low)}")
+   
 
     n_actions = env.action_space.shape[0] if type(env.action_space) == gym.spaces.box.Box else env.action_space.n
 
-    agent = Agent(n_inputs=env.observation_space.shape,
-                      n_actions=n_actions,
-                      **parameters)
+    agent = Agent(
+        actor_lr=actor_lr,
+        critic_lr=critic_lr,
+        gamma=gamma,
+        batch_size=batch_size,
+        min_replay_size=min_replay_size,
+        memory_capacity=memory_capacity,
+        tau=tau,
+        n_inputs=env.observation_space.shape,
+        n_actions=n_actions
+    )
 
-    agent.load_agent(f"{resume}/saves")
-
-    print(f"================= {'Agent Information'.center(30)} =================")
-    print(agent)
-
-    print(f"================= {'Begin Evaluation'.center(30)} =================")
+    agent.load_agent(experiment_name)
 
     total_rewards = 0.0
 
@@ -65,7 +75,7 @@ if __name__ == "__main__":
         obs = env.reset()
         episode_reward = 0.0
 
-        for step in range(episode_length):
+        for step in range(max_steps):
             if render:
                 env.render()
 

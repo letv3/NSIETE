@@ -15,7 +15,7 @@ from srcV2.Misc import *
 device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
 experiment_name = "Zadanie 3"
-episodes = 10000
+episodes = 1
 max_steps = 1000
 exploration = 0
 exploration_prob = 0
@@ -207,16 +207,7 @@ if __name__ == "__main__":
                 evaluation_rewards += rewards
 
             evaluation_rewards = round(evaluation_rewards / eval_eps, 3)
-            # save_path = os.path.join(experiment_path, "saves")
-            # agent.save_agent(save_path)
+
+            agent.save_agent(experiment_name)
             print(f"Episode: {episode} Average evaluation reward: {evaluation_rewards}")
-            # with open(f"{experiment_path}/evaluation_rewards.csv", "a") as f:
-            #     f.write(f"{episode}, {evaluation_rewards}\n")
-            # try:
-            #     if evaluation_rewards > env.spec.reward_threshold * 1.1: # x 1.1 because of small eval_episodes
-            #         print(f"Environment solved after {episode} episodes")
-            #         break
-            # except Exception as e:
-            #     if evaluation_rewards > -120:
-            #         print(f"Environment solved after {episode} episodes")
-            #         break
+

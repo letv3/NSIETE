@@ -134,7 +134,10 @@ class Agent(object):
             for critic_param, target_critic_param in zip(self.critic.parameters(), self.target_critic.parameters()):
                 target_critic_param.data = critic_param.data
 
-    def save_agent(self, save_path):
+    def save_agent(self, model_name):
+        if not os.path.exists("models"):
+            os.mkdir("models")
+        save_path = "./models/"+model_name
         if not os.path.exists(save_path):
             os.mkdir(save_path)
 
@@ -150,20 +153,21 @@ class Agent(object):
         critic_path = os.path.join(save_path, "critic_network.pth")
         torch.save(self.critic.state_dict(), critic_path)
 
-    def load_agent(self, save_path):
-        actor_path = os.path.join(save_path, "actor_network.pth")
+    def load_agent(self, model_name):
+        load_path="./models/"+model_name
+        actor_path = os.path.join(load_path, "actor_network.pth")
         self.actor.load_state_dict(torch.load(actor_path))
         self.actor.eval()
 
-        target_actor_path = os.path.join(save_path, "target_actor_network.pth")
+        target_actor_path = os.path.join(load_path, "target_actor_network.pth")
         self.target_actor.load_state_dict(torch.load(target_actor_path))
         self.target_actor.eval()
 
-        critic_path = os.path.join(save_path, "critic_network.pth")
+        critic_path = os.path.join(load_path, "critic_network.pth")
         self.critic.load_state_dict(torch.load(critic_path))
         self.critic.eval()
 
-        target_critic_path = os.path.join(save_path, "target_critic_network.pth")
+        target_critic_path = os.path.join(load_path, "target_critic_network.pth")
         self.target_critic.load_state_dict(torch.load(target_critic_path))
         self.target_critic.eval()
 
