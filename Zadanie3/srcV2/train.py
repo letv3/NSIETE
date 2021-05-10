@@ -1,7 +1,6 @@
 import numpy as np
 import torch as T
 from Agent import Agent
-from Noise import OrnsteinUhlenbeckActionNoise, NormalActionNoise
 import os
 import argparse
 import json
@@ -9,16 +8,18 @@ import gym
 import random
 from collections import deque
 
+import wandb
+
 from srcV2.Env import LunarLanderContinuous as LLC
 from srcV2.Misc import *
 
 device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
-experiment_name = "Zadanie 3"
-episodes = 1
+experiment_name = "Explration_100_prob_01"
+episodes = 1000
 max_steps = 1000
-exploration = 0
-exploration_prob = 0
+exploration = 100
+exploration_prob = 0.1
 train_interval = 1
 eval_eps = 5
 eval_interval = 10
@@ -37,6 +38,14 @@ seed = 0
 #Exploration mode
 # 0- no exploration, 1- static episode eploration, 2 - variable critic loss exploration
 exploration_mode = 1
+
+solved = False
+number_of_good_scores = 0
+
+wandb_log = True
+
+successful_episodes_bound = 10
+quality_bound = 20 # min reward for successful episode in raw
 
 run_params = {
     "experiment_name": experiment_name,
@@ -61,43 +70,20 @@ if __name__ == "__main__":
 
     env = LLC()
 
+    # env = Monitor(env, "videos")
+    if wandb_log:
+        # Wandb init
+        run = wandb.init(project='zadani3-lunarlander', entity='lytyvnol',
+                         config=run_params, monitor_gym=True)
+        run.name = f"58-run-experiment_name:{experiment_name}"
+        wandb.config.description = ""
+
     T.manual_seed(seed)
     T.backends.cudnn.deterministic = True
     T.backends.cudnn.benchmark = False
     np.random.seed(seed)
     random.seed(seed)
     env.seed(seed)
-
-    # print(f"================= {'Environment Information'.center(30)} =================")
-    # print(f"Action space shape: {env.action_space.shape}")
-    # print(f"Action space upper bound: {env.action_space.high}")
-    # print(f"Action space lower bound: {env.action_space.low}")
-    #
-    # print(f"stateervation space shape: {env.observation_space.shape}")
-    # print(f"stateervation space upper bound: {np.max(env.observation_space.high)}")
-    # print(f"stateervation space lower bound: {np.min(env.observation_space.low)}")
-    #
-    # print(f"================= {'Parameters'.center(30)} =================")
-    # for k, v in __dict__.items():
-    #     print(f"{k:<20}: {v}")
-
-    # Experiment directory storage
-    # counter = 1
-    # env_path = os.path.join("experiments", env)
-    # if not os.path.exists(env_path):
-    #     os.mkdir(env_path)
-    #
-    # while True:
-    #     try:
-    #         experiment_path = os.path.join(env_path, f"{experiment_name}_{counter}")
-    #         os.mkdir(experiment_path)
-    #         os.mkdir(os.path.join(experiment_path, "saves"))
-    #         break
-    #     except FileExistsError as e:
-    #         counter += 1
-    #
-    # with open(os.path.join(experiment_path, 'parameters.json'), 'w') as f:
-    #     json.dump(__dict__, f, indent=2)
 
     n_actions = env.action_space.shape[0] if type(env.action_space) == gym.spaces.box.Box else env.action_space.n
 
@@ -116,6 +102,8 @@ if __name__ == "__main__":
     counter = 0
     reward_history = deque(maxlen=100)
     loss_history = deque(maxlen=50)
+
+    prev_evaluation_reward = -300
 
     for episode in range(episodes):
         state = env.reset()
@@ -159,11 +147,11 @@ if __name__ == "__main__":
                     counter = 0
                     loss = agent.train()
                     # Change probability of random action
-                    exploration_prob = calculate_exploration_prob(loss_history, exploration_prob, 10)
+                    exploration_prob = calculate_exploration_prob(loss_history, exploration_prob, 100)
                     # Loss information kept for monitoring purposes during training
                     actor_loss += loss['actor_loss']
                     critic_loss += loss['critic_loss']
-                    loss_history.append(critic_loss)
+                    loss_history.append(critic_loss.item())
 
                     agent.update()
 
@@ -175,8 +163,17 @@ if __name__ == "__main__":
         reward_history.append(episode_reward)
         print(f"Episode: {episode} Episode reward: {episode_reward} Average reward: {np.mean(reward_history)}")
         # print(f"Actor loss: {actor_loss/(step/train_interval)} Critic loss: {critic_loss/(step/train_interval)}")
+        if wandb_log:
+            wandb.log({
+                "Episode": episode,
+                "Episode reward": episode_reward,
+                "Average reward": np.mean(reward_history),
+                "Actor Loss": actor_loss/(step/train_interval),
+                "Critic Loss": critic_loss/(step/train_interval)
+            })
 
         # Evaluate
+
         if episode % eval_interval == 0:
             evaluation_rewards = 0
             for evalutaion_episode in range(eval_eps):
@@ -207,7 +204,17 @@ if __name__ == "__main__":
                 evaluation_rewards += rewards
 
             evaluation_rewards = round(evaluation_rewards / eval_eps, 3)
-
-            agent.save_agent(experiment_name)
             print(f"Episode: {episode} Average evaluation reward: {evaluation_rewards}")
+            if evaluation_rewards > prev_evaluation_reward:
+                agent.save_agent(experiment_name)
+                prev_evaluation_reward = evaluation_rewards
+                print("Saving actual model")
+            # if evaluation_rewards > 200:
+            #     print(f"Environment solved after {episode} episodes")
+            #     break
+
+    T.cuda.empty_cache()
+    env.close()
+    if wandb_log:
+        run.finish()
 

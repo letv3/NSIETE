@@ -6,14 +6,15 @@ import json
 import gym
 import random
 import torch as T
+import wandb
 
 from srcV2.Env import LunarLanderContinuous as LLC
 from srcV2.Misc import *
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-experiment_name = "Zadanie 3"
-episodes = 10000
+experiment_name = "Explration_100_prob_01"
+episodes = 20
 max_steps = 1000
 exploration = 0
 exploration_prob = 0
@@ -28,7 +29,7 @@ actor_lr = 1e-4
 critic_lr = 1e-3
 gamma = 0.99
 tau = 0.005
-render = False
+render = True
 gaussian_noise = False
 noise_param = 0
 seed = 0
@@ -37,12 +38,44 @@ seed = 0
 exploration_mode = 1
 
 
+wandb_log = True
+
+run_params = {
+    "experiment_name": experiment_name,
+    "episodes": episodes,
+    "max_steps": max_steps,
+    "exploration": exploration if exploration else None,
+    "exploration_prob": exploration_prob if exploration_prob else None,
+    "train_interval": train_interval,
+    "batch_size": batch_size,
+    "min_replay_size": min_replay_size,
+    "memory_capacity": memory_capacity,
+    "actor_lr": actor_lr,
+    "critic_lr": critic_lr,
+    "gamma": gamma,
+    "tau": tau,
+    "gaussian_noise": gaussian_noise if gaussian_noise else None,
+    "noise_param": noise_param if noise_param else None,
+    "seed": seed
+}
+
+
 if __name__ == "__main__":
-   
-    # Load json parameters
-   
+
+    # gym.logger.set_level(gym.logger.DEBUG)
+
+    if wandb_log:
+        # Wandb init
+        run = wandb.init(project='zadani3-lunarlander', entity='lytyvnol',
+                         config=run_params, monitor_gym=True)
+        run.name = f"TEST2-Model:{experiment_name}"
+        wandb.config.description = ""
 
     env = LLC()
+    env = gym.wrappers.Monitor(env, "./vid",
+                               force=True,
+                               mode='evaluation')
+
 
     T.manual_seed(seed)
     T.backends.cudnn.deterministic = True
@@ -51,7 +84,7 @@ if __name__ == "__main__":
     random.seed(seed)
     env.seed(seed)
 
-   
+
 
     n_actions = env.action_space.shape[0] if type(env.action_space) == gym.spaces.box.Box else env.action_space.n
 
@@ -93,9 +126,21 @@ if __name__ == "__main__":
             # End episode if done
             if done:
                 break
+        else:
+            env.stats_recorder.save_complete()
+            env.stats_recorder.done = True
 
         total_rewards += episode_reward
         episode_reward = round(episode_reward, 3)
         print(f"Episode: {episode} Evaluation reward: {episode_reward}")
+        if wandb_log:
+            wandb.log({
+                "Episode": episode,
+                "Episode reward": episode_reward
+            })
+
 
     print(f"{episodes} episode average: {round(total_rewards / episodes, 3)}")
+    env.close()
+    if wandb_log:
+        run.finish()
