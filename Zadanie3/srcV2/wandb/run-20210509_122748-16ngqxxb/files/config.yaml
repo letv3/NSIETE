@@ -1,0 +1,73 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.22
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.8
+    t:
+      1:
+      - 1
+      2:
+      - 1
+      3:
+      - 2
+      4: 3.8.8
+      5: 0.10.22
+      8:
+      - 3
+      - 5
+actor_lr:
+  desc: null
+  value: 0.0001
+batch_size:
+  desc: null
+  value: 64
+critic_lr:
+  desc: null
+  value: 0.001
+description:
+  desc: null
+  value: ''
+episodes:
+  desc: null
+  value: 1000
+experiment_name:
+  desc: null
+  value: Variable exploration probability + 50 exploration_10
+exploration:
+  desc: null
+  value: 50
+exploration_prob:
+  desc: null
+  value: 0.2
+gamma:
+  desc: null
+  value: 0.99
+gaussian_noise:
+  desc: null
+  value: null
+max_steps:
+  desc: null
+  value: 1000
+memory_capacity:
+  desc: null
+  value: 1000000
+min_replay_size:
+  desc: null
+  value: 1000
+noise_param:
+  desc: null
+  value: null
+seed:
+  desc: null
+  value: 0
+tau:
+  desc: null
+  value: 0.005
+train_interval:
+  desc: null
+  value: 1
