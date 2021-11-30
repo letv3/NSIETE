@@ -1,0 +1,26 @@
+{
+    "os": "Windows-10-10.0.18362-SP0",
+    "python": "3.8.8",
+    "heartbeatAt": "2021-03-25T08:45:33.311118",
+    "startedAt": "2021-03-25T08:45:26.955499",
+    "docker": null,
+    "gpu": "GeForce 940MX",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [
+        "-f",
+        "C:\\Users\\petri\\AppData\\Roaming\\jupyter\\runtime\\kernel-557a9197-df99-4621-bd22-aa9dfd8f7e1b.json"
+    ],
+    "state": "running",
+    "program": "zadanie_1.ipynb",
+    "root": "D:/Git/NSIETE",
+    "git": {
+        "remote": "https://github.com/xPetricko/NSIETE.git",
+        "commit": "79b3f28fd48796f4f045aee5933573f28e30a807"
+    },
+    "email": "32256397+xPetricko@users.noreply.github.com",
+    "host": "LAPTOP-AUQDCD8N",
+    "username": "petri",
+    "executable": "c:\\users\\petri\\envs\\nsiete_z1\\scripts\\python.exe"
+}
